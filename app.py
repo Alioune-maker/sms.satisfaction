@@ -47,5 +47,4 @@ def reponse():
     return "", 200
 
 if __name__ == "__main__":
-    envoyer_sms(MON_NUMERO, "Alioune", "1001")
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 3000)))
+     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 3000)))
