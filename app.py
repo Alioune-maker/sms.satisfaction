@@ -10,6 +10,9 @@ ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 TWILIO_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
 MON_NUMERO = os.getenv("MON_NUMERO")
+print (ACCOUNT_SID)
+print (TWILIO_NUMBER)
+print (AUTH_TOKEN[:5] if AUTH_TOKEN else "TOKEN MANQUANT")
 client = Client(ACCOUNT_SID, AUTH_TOKEN)
 
 def envoyer_sms(numero, nom, ticket_id):
@@ -32,5 +35,4 @@ def reponse():
     return "", 200
 
 if __name__ == "__main__":
-    envoyer_sms(MON_NUMERO, "Alioune", "1001")
-    app.run(port=3000)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 3000)))
