@@ -9,7 +9,7 @@ app = Flask(__name__)
 @app.route("/envoyer")
 def envoyer():
     nom = request.args.get("nom", "client")
-    numero = request.args.get("numbeo")
+    numero = request.args.get("numero")
     ticket = request.args.get("ticket", "0000")
     if not numero:
      return "Numéro manquant!", 400
