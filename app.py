@@ -6,13 +6,24 @@ from datetime import datetime
 
 load_dotenv()
 app = Flask(__name__)
+@app.route("/envoyer")
+def envoyer():
+    nom = request.args.get("nom", "client")
+    numero = request.args.get("numbeo")
+    ticket = request.args.get("ticket", "0000")
+    if not numero:
+     return "Numéro manquant!", 400
+    envoyer_sms(numero, nom, ticket)
+    return "Serveur SMS actif!", 200
+
+@app.route("/test")
+def test():
+    envoyer_sms(MON_NUMERO, "Alioune", "1001")
+    return "SMS envoyé!", 200
 ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 TWILIO_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
 MON_NUMERO = os.getenv("MON_NUMERO")
-print (ACCOUNT_SID)
-print (TWILIO_NUMBER)
-print (AUTH_TOKEN[:5] if AUTH_TOKEN else "TOKEN MANQUANT")
 client = Client(ACCOUNT_SID, AUTH_TOKEN)
 
 def envoyer_sms(numero, nom, ticket_id):
@@ -35,4 +46,5 @@ def reponse():
     return "", 200
 
 if __name__ == "__main__":
+    envoyer_sms(MON_NUMERO, "Alioune", "1001")
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 3000)))
