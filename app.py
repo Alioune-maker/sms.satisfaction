@@ -27,6 +27,9 @@ MON_NUMERO = os.getenv("MON_NUMERO")
 
 
 def envoyer_sms(numero, nom, ticket_id):
+    print(f"SID: {ACCOUNT_SID[:5] if ACCOUNT_SID else 'NONE'}")
+    print(f"TOKEN: {AUTH_TOKEN[:5] if AUTH_TOKEN else 'NONE'}")
+    print(f"NUMERO: {numero}")
     client= Client(ACCOUNT_SID, AUTH_TOKEN)
     msg = f"Bonjour {nom}, demande #{ticket_id} resolue. 1=Mauvais 2=Correct 3=Excellent"
     client.messages.create(body=msg, from_=TWILIO_NUMBER, to=numero)
