@@ -51,3 +51,12 @@ def reponse():
 
 if __name__ == "__main__":
      app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 3000)))
+     
+@app.route("/debug")
+def debug():
+    return {
+        "ACCOUNT_SID": "OK" if ACCOUNT_SID else "MANQUANT",
+        "AUTH_TOKEN": "OK" if AUTH_TOKEN else "MANQUANT",
+        "TWILIO_PHONE_NUMBER": "OK" if TWILIO_NUMBER else "MANQUANT",
+        "MON_NUMERO": "OK" if MON_NUMERO else "MANQUANT"
+    }
