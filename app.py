@@ -31,7 +31,7 @@ def envoyer_sms(numero, nom, ticket_id):
     print(f"TOKEN: {AUTH_TOKEN[:5] if AUTH_TOKEN else 'NONE'}")
     print(f"NUMERO: {numero}")
     client= Client(ACCOUNT_SID, AUTH_TOKEN)
-    msg = f"Envoyer par Galsen\nBonjour {nom}, demande #{ticket_id} resolue.\nComment avez vous trouve le service ? 1=Mauvais 2=Correct 3=Excellent"
+    msg = f"Envoyer par Galsen\nBonjour {nom}, demande #{ticket_id} resolue.\nComment avez vous trouvez le service ? 1=Mauvais 2=Correct 3=Excellent"
     client.messages.create(body=msg, from_=TWILIO_NUMBER, to=numero)
     print(f"SMS envoye a {numero}")
 
