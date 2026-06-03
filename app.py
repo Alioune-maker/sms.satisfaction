@@ -60,3 +60,24 @@ def debug():
         "TWILIO_PHONE_NUMBER": "OK" if TWILIO_NUMBER else "MANQUANT",
         "MON_NUMERO": "OK" if MON_NUMERO else "MANQUANT"
     }
+
+@app.route("/stats")
+def stats():
+    fichier = "resultats.json"
+    if not os.path.exists(fichier):
+        return "Aucune réponse encore.", 200
+
+    data = json.load(open(fichier))
+    total = len(data)
+    mauvais = sum(1 for r in data if r["score"] == "Mauvais")
+    correct = sum(1 for r in data if r["score"] == "Correct")
+    excellent = sum(1 for r in data if r["score"] == "Excellent")
+
+    html = f"""
+    <h1>📊 Statistiques de Satisfaction</h1>
+    <p>Total de réponses : <b>{total}</b></p>
+    <p>😞 Mauvais : <b>{mauvais}</b> ({round(mauvais/total*100) if total else 0}%)</p>
+    <p>😐 Correct : <b>{correct}</b> ({round(correct/total*100) if total else 0}%)</p>
+    <p>😊 Excellent : <b>{excellent}</b> ({round(excellent/total*100) if total else 0}%)</p>
+    """
+    return html, 200
