@@ -1,6 +1,8 @@
 from flask import Flask, request
 from twilio.rest import Client
 from dotenv import load_dotenv
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 import os, json
 from datetime import datetime
 
@@ -25,6 +27,20 @@ def sauvegarder(numero, score):
     data.append({"numero": numero, "score": score, "date": datetime.now().strftime("%Y-%m-%d %H:%M")})
     json.dump(data, open(f, "w"), indent=4)
 
+def envoyer_email_alerte(numero, commentaire):
+    message = Mail(
+        from_email="swiftsytems.ca@gmail.com",
+        to_emails="swiftsytems.ca@gmail.com",
+        subject="Nouveau commentaire client !",
+        html_content=f"""
+        <h2>Un client a laisse un commentaire</h2>
+        <p><b>Numero :</b> {numero}</p>
+        <p><b>Commentaire :</b> {commentaire}</p>
+        """
+    )
+    sg = SendGridAPIClient(os.getenv("SENDGRID_API_KEY"))
+    sg.send(message)
+
 @app.route("/envoyer")
 def envoyer():
     nom = request.args.get("nom", "client")
@@ -36,29 +52,39 @@ def envoyer():
     return "SMS envoye!", 200
 
 @app.route("/reponse", methods=["GET", "POST"], strict_slashes=False)
+@app.route("/reponse", methods=["GET", "POST"], strict_slashes=False)
 def reponse():
     numero = request.form.get("From") or request.args.get("From")
     body = request.form.get("Body") or request.args.get("Body")
     if not body:
         return "OK", 200
     
+    body = body.strip()
     scores = {"1": "Mauvais", "2": "Correct", "3": "Excellent"}
-    score = scores.get(body.strip(), "Inconnu")
-    sauvegarder(numero, score)
     
-    # Réponse automatique selon la note
-    if body.strip() == "1":
-        msg = "Merci pour votre retour. Nous sommes desoles que votre experience n'ait pas ete satisfaisante. Un membre de notre equipe vous contactera prochainement."
-    elif body.strip() == "2":
-        msg = "Merci pour votre retour ! Nous prenons note de votre evaluation et nous efforcons de nous ameliorer."
-    elif body.strip() == "3":
-        msg = "Merci pour votre excellente evaluation ! Souhaitez-vous laisser un commentaire sur votre experience ? Repondez directement a ce message."
+    if body in scores:
+        score = scores[body]
+        sauvegarder(numero, score)
+        
+        if body == "1":
+            msg = "Merci pour votre retour. Nous sommes desoles que votre experience n'ait pas ete satisfaisante. Un membre de notre equipe vous contactera prochainement."
+        elif body == "2":
+            msg = "Merci pour votre retour ! Nous prenons note de votre evaluation."
+        elif body == "3":
+            msg = "Merci pour votre excellente evaluation ! Souhaitez-vous laisser un commentaire ? Repondez directement a ce message."
+        
+        client = Client(ACCOUNT_SID, AUTH_TOKEN)
+        client.messages.create(body=msg, from_=TWILIO_NUMBER, to=numero)
+    
     else:
-        return "", 200
-    
-    # Envoyer la réponse automatique
-    client = Client(ACCOUNT_SID, AUTH_TOKEN)
-    client.messages.create(body=msg, from_=TWILIO_NUMBER, to=numero)
+        # C'est un commentaire après le 3
+        envoyer_email_alerte(numero, body)
+        client = Client(ACCOUNT_SID, AUTH_TOKEN)
+        client.messages.create(
+            body="Merci pour votre commentaire ! Nous en prendrons compte.",
+            from_=TWILIO_NUMBER,
+            to=numero
+        )
     
     return "", 200
 
