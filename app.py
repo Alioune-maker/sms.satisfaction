@@ -41,9 +41,25 @@ def reponse():
     body = request.form.get("Body") or request.args.get("Body")
     if not body:
         return "OK", 200
+    
     scores = {"1": "Mauvais", "2": "Correct", "3": "Excellent"}
     score = scores.get(body.strip(), "Inconnu")
     sauvegarder(numero, score)
+    
+    # Réponse automatique selon la note
+    if body.strip() == "1":
+        msg = "Merci pour votre retour. Nous sommes desoles que votre experience n'ait pas ete satisfaisante. Un membre de notre equipe vous contactera prochainement."
+    elif body.strip() == "2":
+        msg = "Merci pour votre retour ! Nous prenons note de votre evaluation et nous efforcons de nous ameliorer."
+    elif body.strip() == "3":
+        msg = "Merci pour votre excellente evaluation ! Souhaitez-vous laisser un commentaire sur votre experience ? Repondez directement a ce message."
+    else:
+        return "", 200
+    
+    # Envoyer la réponse automatique
+    client = Client(ACCOUNT_SID, AUTH_TOKEN)
+    client.messages.create(body=msg, from_=TWILIO_NUMBER, to=numero)
+    
     return "", 200
 
 @app.route("/stats")
