@@ -35,7 +35,7 @@ def envoyer():
     envoyer_sms(numero, nom, ticket)
     return "SMS envoye!", 200
 
-@app.route("/reponse", methods=["GET", "POST"])
+@app.route("/reponse", methods=["GET", "POST"], strict_slashes=False)
 def reponse():
     numero = request.form.get("From") or request.args.get("From")
     body = request.form.get("Body") or request.args.get("Body")
