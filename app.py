@@ -31,7 +31,7 @@ def envoyer_email_alerte(numero, commentaire):
     print(f"Envoi email pour commentaire: {commentaire}")
     try:
         message = Mail(
-            from_email="swiftsystems@gmail.com",
+            from_email="swiftsystems.ca@gmail.com",
             to_emails="aliounediallo704@gmail.com",
             subject="Nouveau commentaire client !",
             html_content=f"""
