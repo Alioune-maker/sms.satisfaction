@@ -57,10 +57,11 @@ def envoyer():
     return "SMS envoye!", 200
 
 @app.route("/reponse", methods=["GET", "POST"], strict_slashes=False)
-@app.route("/reponse", methods=["GET", "POST"], strict_slashes=False)
 def reponse():
     numero = request.form.get("From") or request.args.get("From")
     body = request.form.get("Body") or request.args.get("Body")
+    print(f"Recu: numero={numero}, body={body}")
+
     if not body:
         return "OK", 200
     
