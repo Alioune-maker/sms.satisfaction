@@ -29,8 +29,8 @@ def sauvegarder(numero, score):
 
 def envoyer_email_alerte(numero, commentaire):
     message = Mail(
-        from_email="swiftsytems.ca@gmail.com",
-        to_emails="swiftsytems.ca@gmail.com",
+        from_email="swiftsystems@gmail.com",  # ton email SendGrid vérifié
+        to_emails="aliounediallo704@gmail.com",    # email où tu veux recevoir l'alerte
         subject="Nouveau commentaire client !",
         html_content=f"""
         <h2>Un client a laisse un commentaire</h2>
