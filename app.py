@@ -28,18 +28,23 @@ def sauvegarder(numero, score):
     json.dump(data, open(f, "w"), indent=4)
 
 def envoyer_email_alerte(numero, commentaire):
-    message = Mail(
-        from_email="swiftsystems@gmail.com",  # ton email SendGrid vérifié
-        to_emails="aliounediallo704@gmail.com",    # email où tu veux recevoir l'alerte
-        subject="Nouveau commentaire client !",
-        html_content=f"""
-        <h2>Un client a laisse un commentaire</h2>
-        <p><b>Numero :</b> {numero}</p>
-        <p><b>Commentaire :</b> {commentaire}</p>
-        """
-    )
-    sg = SendGridAPIClient(os.getenv("SENDGRID_API_KEY"))
-    sg.send(message)
+    print(f"Envoi email pour commentaire: {commentaire}")
+    try:
+        message = Mail(
+            from_email="swiftsystems@gmail.com",
+            to_emails="aliounediallo704@gmail.com",
+            subject="Nouveau commentaire client !",
+            html_content=f"""
+            <h2>Un client a laisse un commentaire</h2>
+            <p><b>Numero :</b> {numero}</p>
+            <p><b>Commentaire :</b> {commentaire}</p>
+            """
+        )
+        sg = SendGridAPIClient(os.getenv("SENDGRID_API_KEY"))
+        response = sg.send(message)
+        print(f"Email envoye! Status: {response.status_code}")
+    except Exception as e:
+        print(f"Erreur email: {e}")
 
 @app.route("/envoyer")
 def envoyer():
