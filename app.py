@@ -32,7 +32,7 @@ def envoyer_email_alerte(numero, commentaire):
     try:
         message = Mail(
             from_email="swiftsystems.ca@gmail.com",
-            to_emails="aliounediallo704@gmail.com",
+            to_emails="swiftsystems.ca@gmail.com",
             subject="Nouveau commentaire client !",
             html_content=f"""
             <h2>Un client a laisse un commentaire</h2>
