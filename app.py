@@ -27,24 +27,15 @@ def sauvegarder(numero, score):
     data.append({"numero": numero, "score": score, "date": datetime.now().strftime("%Y-%m-%d %H:%M")})
     json.dump(data, open(f, "w"), indent=4)
 
-def envoyer_email_alerte(numero, commentaire):
-    print(f"Envoi email pour commentaire: {commentaire}")
-    try:
-        message = Mail(
-            from_email="swiftsystems.ca@gmail.com",
-            to_emails="swiftsystems.ca@gmail.com",
-            subject="Nouveau commentaire client !",
-            html_content=f"""
-            <h2>Un client a laisse un commentaire</h2>
-            <p><b>Numero :</b> {numero}</p>
-            <p><b>Commentaire :</b> {commentaire}</p>
-            """
-        )
-        sg = SendGridAPIClient(os.getenv("SENDGRID_API_KEY"))
-        response = sg.send(message)
-        print(f"Email envoye! Status: {response.status_code}")
-    except Exception as e:
-        print(f"Erreur email: {e}")
+def envoyer_sms_alerte(numero_client, commentaire):
+    client = Client(ACCOUNT_SID, AUTH_TOKEN)
+    msg = f"ALERTE - Nouveau commentaire client!\nNumero: {numero_client}\nCommentaire: {commentaire}"
+    client.messages.create(
+        body=msg,
+        from_=TWILIO_NUMBER,
+        to=MON_NUMERO
+    )
+    print(f"SMS alerte envoye!")
 
 @app.route("/envoyer")
 def envoyer():
