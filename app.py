@@ -75,7 +75,7 @@ def reponse():
     
     else:
         # C'est un commentaire après le 3
-        envoyer_email_alerte(numero, body)
+        envoyer_sms_alerte(numero, body)
         client = Client(ACCOUNT_SID, AUTH_TOKEN)
         client.messages.create(
             body="Merci pour votre commentaire ! Nous en prendrons compte.",
