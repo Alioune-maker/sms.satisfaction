@@ -17,7 +17,7 @@ MON_NUMERO = os.getenv("MON_NUMERO")
 
 def envoyer_sms(numero, nom, ticket_id):
     client = Client(ACCOUNT_SID, AUTH_TOKEN)
-    msg = f"Envoyer par Galsen\nBonjour {nom}, demande #{ticket_id} resolue.\nComment avez vous trouvez le service ? 1=Mauvais 2=Correct 3=Excellent"
+    msg = f"Envoyer par swiftsystems\nBonjour {nom}, demande #{ticket_id} resolue.\nComment avez vous trouvez le service ? 1=Excellent 2=Correct 3=Mauvais"
     client.messages.create(body=msg, from_=TWILIO_NUMBER, to=numero)
     print(f"SMS envoye a {numero}")
 
@@ -57,19 +57,18 @@ def reponse():
         return "OK", 200
     
     body = body.strip()
-    scores = {"1": "Mauvais", "2": "Correct", "3": "Excellent"}
+    scores = {"1": "Excellent", "2": "Correct", "3": "Mauvais"}
     
     if body in scores:
         score = scores[body]
         sauvegarder(numero, score)
         
         if body == "1":
-            msg = "Merci pour votre retour. Nous sommes desoles que votre experience n'ait pas ete satisfaisante. Un membre de notre equipe vous contactera prochainement."
+            msg = "Merci pour votre excellente evaluation ! Souhaitez-vous laisser un commentaire ? Repondez directement a ce message."
         elif body == "2":
             msg = "Merci pour votre retour ! Nous prenons note de votre evaluation."
         elif body == "3":
-            msg = "Merci pour votre excellente evaluation ! Souhaitez-vous laisser un commentaire ? Repondez directement a ce message."
-        
+            msg = "Merci pour votre retour. Nous sommes desoles que votre experience n'ait pas ete satisfaisante. Un membre de notre equipe vous contactera prochainement."
         client = Client(ACCOUNT_SID, AUTH_TOKEN)
         client.messages.create(body=msg, from_=TWILIO_NUMBER, to=numero)
     
@@ -80,8 +79,7 @@ def reponse():
         client.messages.create(
             body="Merci pour votre commentaire ! Nous en prendrons compte.",
             from_=TWILIO_NUMBER,
-            to=numero
-        )
+            to= numero        )
     
     return "", 200
 
