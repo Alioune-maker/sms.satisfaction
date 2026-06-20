@@ -5,7 +5,7 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 import os, json
 from datetime import datetime
-
+from supabase import create_client
 load_dotenv()
 app = Flask(__name__)
 
@@ -13,6 +13,9 @@ ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 TWILIO_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
 MON_NUMERO = os.getenv("MON_NUMERO")
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 def envoyer_sms(numero, nom, ticket_id):
@@ -21,20 +24,25 @@ def envoyer_sms(numero, nom, ticket_id):
     client.messages.create(body=msg, from_=TWILIO_NUMBER, to=numero)
     print(f"SMS envoye a {numero}")
 
-def sauvegarder(numero, score):
-    f = "resultats.json"
-    data = json.load(open(f)) if os.path.exists(f) else []
-    data.append({"numero": numero, "score": score, "date": datetime.now().strftime("%Y-%m-%d %H:%M")})
-    json.dump(data, open(f, "w"), indent=4)
+def sauvegarder(numero, score, commentaire=None):
+    supabase.table("reponses").insert({
+        "numero": numero,
+        "score": score,
+        "commentaire": commentaire
+    }).execute()
+    print(f"Sauvegarde dans Supabase: {score}")
 
 def envoyer_sms_alerte(numero_client, commentaire):
+    # Sauvegarder le commentaire dans Supabase
+    supabase.table("commentaires").insert({
+        "numero": numero_client,
+        "commentaire": commentaire
+    }).execute()
+    
+    # Envoyer SMS d'alerte
     client = Client(ACCOUNT_SID, AUTH_TOKEN)
     msg = f"ALERTE - Nouveau commentaire client!\nNumero: {numero_client}\nCommentaire: {commentaire}"
-    client.messages.create(
-        body=msg,
-        from_=TWILIO_NUMBER,
-        to=MON_NUMERO
-    )
+    client.messages.create(body=msg, from_=TWILIO_NUMBER, to=MON_NUMERO)
     print(f"SMS alerte envoye!")
 
 @app.route("/envoyer")
