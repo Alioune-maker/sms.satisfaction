@@ -12,7 +12,8 @@ app = Flask(__name__)
 ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 TWILIO_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
-MON_NUMERO = os.getenv("MON_NUMERO")
+MON_NUMERO = os.getenv("MON_NUMERO") 
+en_attente_commentaire = {}
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -60,19 +61,27 @@ def reponse():
     numero = request.form.get("From") or request.args.get("From")
     body = request.form.get("Body") or request.args.get("Body")
     print(f"Recu: numero={numero}, body={body}")
-
     if not body:
         return "OK", 200
     
     body = body.strip()
     scores = {"1": "Excellent", "2": "Correct", "3": "Mauvais"}
     
-    if body in scores:
+    if numero in en_attente_commentaire:
+        del en_attente_commentaire[numero]
+        envoyer_sms_alerte(numero, body)
+        client = Client(ACCOUNT_SID, AUTH_TOKEN)
+        client.messages.create(
+            body="Merci pour votre commentaire ! Nous en prendrons compte.",
+            from_=TWILIO_NUMBER,
+            to=numero
+        )
+    elif body in scores:
         score = scores[body]
         sauvegarder(numero, score)
-        
         if body == "1":
             msg = "Merci pour votre excellente evaluation ! Souhaitez-vous laisser un commentaire ? Repondez directement a ce message."
+            en_attente_commentaire[numero] = True
         elif body == "2":
             msg = "Merci pour votre retour ! Nous prenons note de votre evaluation."
         elif body == "3":
@@ -80,36 +89,24 @@ def reponse():
         client = Client(ACCOUNT_SID, AUTH_TOKEN)
         client.messages.create(body=msg, from_=TWILIO_NUMBER, to=numero)
     
-    else:
-        # C'est un commentaire après le 3
-        envoyer_sms_alerte(numero, body)
-        client = Client(ACCOUNT_SID, AUTH_TOKEN)
-        client.messages.create(
-            body="Merci pour votre commentaire ! Nous en prendrons compte.",
-            from_=TWILIO_NUMBER,
-            to= numero        )
-    
     return "", 200
+
 
 @app.route("/stats")
 def stats():
-    fichier = "resultats.json"
-    if not os.path.exists(fichier):
-        return "Aucune reponse encore.", 200
-    data = json.load(open(fichier))
-    total = len(data)
-    mauvais = sum(1 for r in data if r["score"] == "Mauvais")
-    correct = sum(1 for r in data if r["score"] == "Correct")
-    excellent = sum(1 for r in data if r["score"] == "Excellent")
-    html = f"""
-    <h1>Statistiques de Satisfaction</h1>
-    <p>Total : <b>{total}</b></p>
-    <p>Mauvais : <b>{mauvais}</b> ({round(mauvais/total*100) if total else 0}%)</p>
-    <p>Correct : <b>{correct}</b> ({round(correct/total*100) if total else 0}%)</p>
-    <p>Excellent : <b>{excellent}</b> ({round(excellent/total*100) if total else 0}%)</p>
-    """
-    return html, 200
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 3000)))
-
+    try:
+        data = supabase.table("reponses").select("*").execute().data
+        total = len(data)
+        mauvais = sum(1 for r in data if r["score"] == "Mauvais")
+        correct = sum(1 for r in data if r["score"] == "Correct")
+        excellent = sum(1 for r in data if r["score"] == "Excellent")
+        html = f"""
+        <h1>Statistiques de Satisfaction</h1>
+        <p>Total : <b>{total}</b></p>
+        <p>😞 Mauvais : <b>{mauvais}</b> ({round(mauvais/total*100) if total else 0}%)</p>
+        <p>😐 Correct : <b>{correct}</b> ({round(correct/total*100) if total else 0}%)</p>
+        <p>😊 Excellent : <b>{excellent}</b> ({round(excellent/total*100) if total else 0}%)</p>
+        """
+        return html, 200
+    except Exception as e:
+        return f"Erreur: {e}", 500
