@@ -85,14 +85,12 @@ def reponse():
         score = scores[body]
         sauvegarder(numero, score)
         if body == "1":
-            msg = "Merci pour votre excellente evaluation ! Souhaitez-vous laisser un commentaire ? Repondez directement a ce message."
-            supabase.table("etats").upsert({"numero": numero, "en_attente": True}).execute()
+            msg = "Merci pour votre excellente evaluation !"
         elif body == "2":
             msg = "Merci pour votre retour ! Nous prenons note de votre evaluation."
         elif body == "3":
-            msg = "Merci pour votre retour. Nous sommes desoles que votre experience n'ait pas ete satisfaisante. Laissez un commentaire a ce message et un membre de notre equipe vous contactera prochainement."
-        client = Client(ACCOUNT_SID, AUTH_TOKEN)
-        client.messages.create(body=msg, from_=TWILIO_NUMBER, to=numero)
+            msg = "Merci pour votre retour. Nous sommes desoles. Souhaitez-vous laisser un commentaire ? Repondez directement a ce message."
+            supabase.table("etats").upsert({"numero": numero, "en_attente": True}).execute()
     
     return "", 200
 
