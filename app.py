@@ -67,12 +67,10 @@ def reponse():
     body = body.strip()
     scores = {"1": "Excellent", "2": "Correct", "3": "Mauvais"}
     
-    # Vérifier si ce numéro attend un commentaire
     etat = supabase.table("etats").select("*").eq("numero", numero).execute().data
     en_attente = len(etat) > 0 and etat[0]["en_attente"]
     
     if en_attente:
-        # C'est un commentaire
         supabase.table("etats").delete().eq("numero", numero).execute()
         envoyer_sms_alerte(numero, body)
         client = Client(ACCOUNT_SID, AUTH_TOKEN)
@@ -84,16 +82,13 @@ def reponse():
     elif body in scores:
         score = scores[body]
         sauvegarder(numero, score)
-    elif body in scores:
-        score = scores[body]
-        sauvegarder(numero, score)
         if body == "1":
             msg = "Merci pour votre excellente evaluation !"
         elif body == "2":
             msg = "Merci pour votre retour ! Nous prenons note de votre evaluation."
         elif body == "3":
             msg = "Merci pour votre retour. Nous sommes desoles. Souhaitez-vous laisser un commentaire ? Repondez directement a ce message."
-        supabase.table("etats").upsert({"numero": numero, "en_attente": True}).execute()
+            supabase.table("etats").upsert({"numero": numero, "en_attente": True}).execute()
         client = Client(ACCOUNT_SID, AUTH_TOKEN)
         client.messages.create(body=msg, from_=TWILIO_NUMBER, to=numero)
     
